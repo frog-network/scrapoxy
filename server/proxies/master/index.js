@@ -130,8 +130,6 @@ module.exports = class Master {
                 proxy: instance.proxyParameters,
             });
 
-
-            const proxy_req = http.request(proxyOpts);
             
             let proxy_req;
             
