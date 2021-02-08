@@ -4,6 +4,7 @@
 
 const _ = require('lodash'),
     Promise = require('bluebird'),
+    ProviderGCP = require('./providers/gcp'), 
     ProviderAWSEC2 = require('./providers/awsec2'),
     ProviderDigitalOcean = require('./providers/digitalocean'),
     ProviderOVHCloud = require('./providers/ovhcloud'),
@@ -142,6 +143,10 @@ function startProxy(configFilename) {
 
         function getProvider(provider) {
             switch (provider.type) {
+                case 'gcp':
+                    {
+                        return new ProviderGCP(provider, cfg.instance.port)
+                    }
                 case 'awsec2':
                 {
                     return new ProviderAWSEC2(provider, cfg.instance.port);
