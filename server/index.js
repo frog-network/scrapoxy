@@ -27,7 +27,6 @@ const configDefaults = require('./config.defaults');
 winston.remove(winston.transports.Console);
 winston.add(winston.transports.Console, {timestamp: true});
 
-
 program
     .version('3.1.1')
     .option('-d, --debug', 'Debug mode (increase verbosity)', debugMode)
