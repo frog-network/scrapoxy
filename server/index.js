@@ -19,16 +19,22 @@ const _ = require('lodash'),
     template = require('./template'),
     TestProxy = require('./test-proxy'),
     winston = require('winston');
+const { exit } = require('process');
+const { log } = require('util');
 
 const configDefaults = require('./config.defaults');
 
 
 // Add timestamp to log
+const log_level = process.env.LOG_LEVEL || 'error'
+
 winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {timestamp: true});
+winston.add(winston.transports.Console, {timestamp: true, level: log_level});
+
+winston.log(log_level,`starting with debug level: ${log_level}`)
 
 program
-    .version('3.1.1')
+    .version('3.1.2')
     .option('-d, --debug', 'Debug mode (increase verbosity)', debugMode)
     .parse(process.argv);
 
