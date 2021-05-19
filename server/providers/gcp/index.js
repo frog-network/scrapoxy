@@ -7,8 +7,11 @@ const _ = require('lodash'),
   InstanceModel = require('../../proxies/manager/instance.model'),
   ScalingError = require('../../common/error/scaling'),
   winston = require('winston');
-  // const {GoogleAuth} = require('google-auth-library');
-      
+  log_level = process.env.LOG_LEVEL || 'error'
+
+winston.remove(winston.transports.Console);
+winston.add(winston.transports.Console, {timestamp: true, level: log_level});
+
 
 module.exports = class ProviderGCP {
   constructor(config, instancePort) {
