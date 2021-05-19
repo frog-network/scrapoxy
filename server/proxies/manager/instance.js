@@ -5,7 +5,8 @@ const _ = require('lodash'),
     InstanceModel = require('./instance.model'),
     pinger = require('../../common/pinger'),
     useragent = require('./useragent'),
-    winston = require('winston');
+    log = require('../../common/logger')
+    // winston = require('winston');
 
 
 module.exports = class Instance extends EventEmitter {
@@ -32,9 +33,9 @@ module.exports = class Instance extends EventEmitter {
             // Alive
             if (newstatus === InstanceModel.STARTED) {
                 // Start monitor
-                winston.debug('[Instance/%s] checkAlive every %d secs', self._model.name, self._config.checkAliveDelay);
+                log.debug('[Instance/%s] checkAlive every %d secs', self._model.name, self._config.checkAliveDelay);
                 self._checkAliveTimeout = setInterval(() => {
-                    winston.debug('[Instance/%s] checkAlive: %s / %s', self._model.name, self._alive, self._aliveCount ? self._aliveCount : '-');
+                    log.debug('[Instance/%s] checkAlive: %s / %s', self._model.name, self._alive, self._aliveCount ? self._aliveCount : '-');
 
                     pinger.ping(self._model.address)
                         .then(() => {
@@ -61,7 +62,7 @@ module.exports = class Instance extends EventEmitter {
             // Alive
             if (newstatus === InstanceModel.STARTED) {
                 const delay = getRandomDelay(self._config.autorestart.minDelay, self._config.autorestart.maxDelay);
-                winston.debug('[Instance/%s] autorestart in %d secs', self._model.name, delay);
+                log.debug('[Instance/%s] autorestart in %d secs', self._model.name, delay);
                 self._checkRestartTimeout = setTimeout(autorestart, delay);
             }
             else if (self._checkRestartTimeout) {
@@ -76,7 +77,7 @@ module.exports = class Instance extends EventEmitter {
             if (newstatus === InstanceModel.ERROR) {
                 self._provider.removeInstance(self._model)
                     .catch((err) => {
-                        winston.error('[Instance/%s] Error: Instance has an error status:', self._model.name, err);
+                        log.error('[Instance/%s] Error: Instance has an error status:', self._model.name, err);
                     });
             }
         });
@@ -87,7 +88,7 @@ module.exports = class Instance extends EventEmitter {
             if (newstatus === InstanceModel.STOPPED) {
                 self._provider.startInstance(self._model)
                     .catch((err) => {
-                        winston.error('[Instance/%s] Error: Cannot restart stopped instance:', self._model.name, err);
+                        log.error('[Instance/%s] Error: Cannot restart stopped instance:', self._model.name, err);
                     });
             }
         });
@@ -104,20 +105,20 @@ module.exports = class Instance extends EventEmitter {
         self.on('alive:updated', (alive) => {
             // Crash timer
             if (alive) {
-                winston.debug('[Instance/%s] Instance is alive. Remove crash timer', self._model.name);
+                log.debug('[Instance/%s] Instance is alive. Remove crash timer', self._model.name);
                 if (self._checkStopIfCrashedTimeout) {
                     clearTimeout(self._checkStopIfCrashedTimeout);
                     self._checkStopIfCrashedTimeout = void 0;
                 }
             }
             else {
-                winston.debug('[Instance/%s] Instance is down. Crash timer starts', self._model.name);
+                log.debug('[Instance/%s] Instance is down. Crash timer starts', self._model.name);
                 self._checkStopIfCrashedTimeout = setTimeout(() => {
-                    winston.debug('[Instance/%s] stopIfCrashed', self._model.name);
+                    log.debug('[Instance/%s] stopIfCrashed', self._model.name);
 
                     self.remove()
                         .catch((err) => {
-                            winston.error('[Instance/%s] Error: Cannot remove running crashed instance:', self._model.name, err);
+                            log.error('[Instance/%s] Error: Cannot remove running crashed instance:', self._model.name, err);
                         });
                 }, self._config.stopIfCrashedDelay);
             }
@@ -127,13 +128,13 @@ module.exports = class Instance extends EventEmitter {
         ////////////
 
         function autorestart() {
-            winston.debug('[Instance/%s] autorestart', self._model.name);
+            log.debug('[Instance/%s] autorestart', self._model.name);
 
             if (self._model.status === InstanceModel.STARTED) {
                 if (self._manager.aliveInstances.length > 1) {
                     self.remove()
                         .catch((err) => {
-                            winston.error('[Instance/%s] Error: Cannot remove started instance for autorestart:', self._model.name, err);
+                            log.error('[Instance/%s] Error: Cannot remove started instance for autorestart:', self._model.name, err);
                         });
                 }
                 else {
@@ -142,7 +143,7 @@ module.exports = class Instance extends EventEmitter {
                         Math.random() * (self._config.autorestart.maxDelay - self._config.autorestart.minDelay)
                     );
 
-                    winston.debug('[Instance/%s] autorestart cancelled (only 1 instance). restarting in %d secs...', self._model.name, delay);
+                    log.debug('[Instance/%s] autorestart cancelled (only 1 instance). restarting in %d secs...', self._model.name, delay);
 
                     self._checkRestartTimeout = setTimeout(autorestart, delay);
                 }
@@ -239,7 +240,7 @@ module.exports = class Instance extends EventEmitter {
 
 
     _changeAlive(alive) {
-        winston.debug('[Instance/%s] changeAlive: %s => %s', this._model.name, this._alive, alive);
+        log.debug('[Instance/%s] changeAlive: %s => %s', this._model.name, this._alive, alive);
 
         if (this._alive !== alive) {
             this._alive = alive;

@@ -10,12 +10,9 @@ const Promise = require('bluebird'),
     http = require('http'),
     path = require('path'),
     socketIO = require('socket.io'),
-    winston = require('winston');
+    log = require('../../common/logger')
+    // winston = require('winston');
 
-const  log_level = process.env.LOG_LEVEL || 'error'
-
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {timestamp: true, level: log_level});
 
 module.exports = class Commander {
     constructor(config, manager, stats) {
@@ -118,7 +115,7 @@ module.exports = class Commander {
                     );
                 }
 
-                winston.info('[Commander] GUI is available at http://localhost:%d', this._config.commander.port);
+                log.info('[Commander] GUI is available at http://localhost:%d', this._config.commander.port);
 
                 resolve();
             });

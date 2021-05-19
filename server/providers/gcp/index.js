@@ -6,12 +6,9 @@ const _ = require('lodash'),
   GCPCompute = require('@google-cloud/compute'),
   InstanceModel = require('../../proxies/manager/instance.model'),
   ScalingError = require('../../common/error/scaling'),
-  winston = require('winston');
+  log = require('../../common/logger')
+  // winston = require('winston');
 
-const  log_level = process.env.LOG_LEVEL || 'error'
-
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {timestamp: true, level: log_level});
 
 
 module.exports = class ProviderGCP {
@@ -23,7 +20,7 @@ module.exports = class ProviderGCP {
     }
 
     this._config = config;
-    winston.debug('[ProviderGCP] config:', config);
+    log.debug('[ProviderGCP] config:', config);
     this._config.tag = this._config.tag || 'Proxy';
 
     this._instancePort = instancePort;
@@ -51,7 +48,7 @@ module.exports = class ProviderGCP {
 
       this._removeInstances(models).catch((err) => {
         const names = models.map((model) => model.toString()).join(',');
-        winston.error(
+        log.error(
           '[ProviderGCP] Error: Cannot remove instances %s:',
           names,
           err
@@ -166,7 +163,7 @@ module.exports = class ProviderGCP {
     }
 
     function convertToModel(instancesDesc) {
-      winston.debug('[ProviderGCP] convertToModel:', instancesDesc.length);
+      log.debug('[ProviderGCP] convertToModel:', instancesDesc.length);
       return _.map(
         instancesDesc,
         (instanceDesc) =>
@@ -240,9 +237,9 @@ module.exports = class ProviderGCP {
 
 
         const [vm, operation] = await zone.createVM(vmName, config);
-        winston.debug('[ProviderGCP] createInstances: new VM', vm.name);
+        log.debug('[ProviderGCP] createInstances: new VM', vm.name);
         await operation.promise();
-        winston.debug('[ProviderGCP] createInstances: VM created successfully');
+        log.debug('[ProviderGCP] createInstances: VM created successfully');
         return vm.id;
       }
 
@@ -277,7 +274,7 @@ module.exports = class ProviderGCP {
 
     function tagInstances(zone, ids, tag) {
       Promise.map(ids, (id) => new Promise((resolve, reject) => {
-        winston.debug('[ProviderGCP] tagInstances: id:', id, tag);
+        log.debug('[ProviderGCP] tagInstances: id:', id, tag);
         zone.vm(id).getTags()
           .then((data) => {
             const tags = data[0];
@@ -292,7 +289,7 @@ module.exports = class ProviderGCP {
   }
 
   startInstance(model) {
-    winston.debug('[ProviderGCP] startInstance: model=', model.toString());
+    log.debug('[ProviderGCP] startInstance: model=', model.toString());
 
     return new Promise((resolve, reject) => {  
       this._zone.vm(model.providerOpts.id).start().then(async (data) => {
@@ -318,7 +315,7 @@ module.exports = class ProviderGCP {
     const ids = models.map((model) => model.providerOpts.id),
       names = models.map((model) => model.toString()).join(',');
 
-    winston.debug('[ProviderGCP] removeInstances: models=', names);
+    log.debug('[ProviderGCP] removeInstances: models=', names);
 
     return new Promise((resolve, reject) => {
     //   const params = {

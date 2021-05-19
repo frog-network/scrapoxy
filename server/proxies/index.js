@@ -4,12 +4,9 @@ const Commander = require('./commander'),
     Manager = require('./manager'),
     Master = require('./master'),
     Stats = require('./stats'),
-    winston = require('winston');
+    log = require('../common/logger')
+    // winston = require('winston');
 
-const  log_level = process.env.LOG_LEVEL || 'error'
-
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {timestamp: true, level: log_level});
 
 module.exports = class Proxies {
     constructor(config, providers) {
@@ -18,7 +15,7 @@ module.exports = class Proxies {
 
         // Show provider name
         const providersName = this._providers.map((provider) => `${provider.name}/${provider.region}`);
-        winston.info('[Main] The selected providers are', providersName.join(', '));
+        log.info('[Main] The selected providers are', providersName.join(', '));
 
         // Stats
         this._stats = new Stats(this._config.stats);
@@ -52,7 +49,7 @@ module.exports = class Proxies {
 
 
     listen() {
-        winston.debug('[Main] listen');
+        log.debug('[Main] listen');
 
         // Start Commander
         return this._commander
@@ -68,7 +65,7 @@ module.exports = class Proxies {
 
 
     listenAndWait() {
-        winston.debug('[Main] listenAndWait');
+        log.debug('[Main] listenAndWait');
 
         return this
             .listen()
@@ -77,13 +74,13 @@ module.exports = class Proxies {
 
 
     shutdown() {
-        winston.debug('[Main] shutdown');
+        log.debug('[Main] shutdown');
 
         this._master.shutdown();
         this._commander.shutdown();
 
         return this._manager
             .stop()
-            .then(() => winston.info('[Main] All instances are stopped.'));
+            .then(() => log.info('[Main] All instances are stopped.'));
     }
 };
