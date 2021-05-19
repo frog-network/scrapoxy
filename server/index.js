@@ -34,7 +34,7 @@ winston.add(winston.transports.Console, {timestamp: true, level: log_level});
 winston.log(log_level,`starting with debug level: ${log_level}`)
 
 program
-    .version('3.1.2')
+    .version('3.1.3')
     .option('-d, --debug', 'Debug mode (increase verbosity)', debugMode)
     .parse(process.argv);
 
