@@ -20,7 +20,7 @@ module.exports = class ProviderGCP {
     }
 
     this._config = config;
-    log.debug('[ProviderGCP] config:', config);
+    log.debug(`[ProviderGCP] config: ${JSON.stringify(config)}`);
     this._config.tag = this._config.tag || 'Proxy';
 
     this._instancePort = instancePort;
@@ -115,7 +115,7 @@ module.exports = class ProviderGCP {
           if (err) {
             return reject(err);
           }
-          log.debug('[ProviderGCP] describeInstances get VMs:', _.map(vms, "name"));
+          log.debug(`[ProviderGCP] describeInstances get VMs: ${JSON.stringify(_.map(vms, "name"))}`);
           resolve(vms);
         });
       });
@@ -130,7 +130,7 @@ module.exports = class ProviderGCP {
           ip: instanceDesc.metadata.networkInterfaces[0].accessConfigs[0].natIP || instanceDesc.metadata.networkInterfaces[0].networkIP,
           tag: getTag(instanceDesc),
         };
-        log.debug('[ProviderGCP] summarizeInfo:', summary);
+        log.debug('[ProviderGCP] summarizeInfo:', JSON.stringify(summary));
         return summary;
     });
 
@@ -163,7 +163,7 @@ module.exports = class ProviderGCP {
     }
 
     function convertToModel(instancesDesc) {
-      log.debug('[ProviderGCP] convertToModel:', instancesDesc.length);
+      log.debug(`[ProviderGCP] convertToModel: ${instancesDesc.length}`);
       return _.map(
         instancesDesc,
         (instanceDesc) =>
@@ -218,7 +218,7 @@ module.exports = class ProviderGCP {
   createInstances(count) {
     const self = this;
 
-    log.debug('[ProviderGCP] createInstances: count=%d', count);
+    log.debug(`[ProviderGCP] createInstances: count=${count}`);
 
     return createInstances(self._config.instance, count)
       .then((ids) => Promise.delay(1000, ids))
@@ -237,7 +237,7 @@ module.exports = class ProviderGCP {
 
 
         const [vm, operation] = await zone.createVM(vmName, config);
-        log.debug('[ProviderGCP] createInstances: new VM', vm.name);
+        log.debug(`[ProviderGCP] createInstances: new VM'${vm.name}'`);
         await operation.promise();
         log.debug('[ProviderGCP] createInstances: VM created successfully');
         return vm.id;
@@ -315,7 +315,7 @@ module.exports = class ProviderGCP {
     const ids = models.map((model) => model.providerOpts.id),
       names = models.map((model) => model.toString()).join(',');
 
-    log.debug('[ProviderGCP] removeInstances: models=', names);
+    log.debug(`[ProviderGCP] removeInstances: models=${JSON.stringify(names)});
 
     return new Promise((resolve, reject) => {
     //   const params = {
