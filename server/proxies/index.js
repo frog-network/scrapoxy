@@ -6,6 +6,10 @@ const Commander = require('./commander'),
     Stats = require('./stats'),
     winston = require('winston');
 
+const  log_level = process.env.LOG_LEVEL || 'error'
+
+winston.remove(winston.transports.Console);
+winston.add(winston.transports.Console, {timestamp: true, level: log_level});
 
 module.exports = class Proxies {
     constructor(config, providers) {
