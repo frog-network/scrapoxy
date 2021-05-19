@@ -115,7 +115,7 @@ module.exports = class ProviderGCP {
           if (err) {
             return reject(err);
           }
-          winston.debug('[ProviderGCP] describeInstances get VMs:', _.map(vms, "name"));
+          log.debug('[ProviderGCP] describeInstances get VMs:', _.map(vms, "name"));
           resolve(vms);
         });
       });
@@ -130,7 +130,7 @@ module.exports = class ProviderGCP {
           ip: instanceDesc.metadata.networkInterfaces[0].accessConfigs[0].natIP || instanceDesc.metadata.networkInterfaces[0].networkIP,
           tag: getTag(instanceDesc),
         };
-        winston.debug('[ProviderGCP] summarizeInfo:', summary);
+        log.debug('[ProviderGCP] summarizeInfo:', summary);
         return summary;
     });
 
@@ -206,7 +206,7 @@ module.exports = class ProviderGCP {
             return InstanceModel.STOPPING;
           }
           default: {
-            winston.error('[ProviderGCP] Error: Found unknown status:', status);
+            log.error('[ProviderGCP] Error: Found unknown status:', status);
 
             return InstanceModel.ERROR;
           }
@@ -218,7 +218,7 @@ module.exports = class ProviderGCP {
   createInstances(count) {
     const self = this;
 
-    winston.debug('[ProviderGCP] createInstances: count=%d', count);
+    log.debug('[ProviderGCP] createInstances: count=%d', count);
 
     return createInstances(self._config.instance, count)
       .then((ids) => Promise.delay(1000, ids))
@@ -301,7 +301,7 @@ module.exports = class ProviderGCP {
   }
 
   removeInstance(model) {
-    winston.debug(
+    log.debug(
       '[ProviderGCP] removeInstance (asked): model=',
       model.toString()
     );
