@@ -89,13 +89,13 @@ module.exports = class Master {
             // Log errors
             req.on('error',
                 (err) => {
-                    log.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warn('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
             res.on('error',
                 (err) => {
-                    log.warning('[Master] Error: response error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warn('[Master] Error: response error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
@@ -140,7 +140,7 @@ module.exports = class Master {
             }
 
             proxy_req.on('error', (err) => {
-                log.warning('[Master] Error: request error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                log.warn('[Master] Error: request error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                 return writeEndRequest(res, 500, `[Master] Error: request error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
             });
@@ -150,7 +150,7 @@ module.exports = class Master {
 
             proxy_req.on('response', (proxy_res) => {
                 proxy_res.on('error', (err) => {
-                    log.warning('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warn('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                     return writeEndRequest(res, 500, `[Master] Error: response error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
                 });
@@ -222,13 +222,13 @@ module.exports = class Master {
             // Log errors
             req.on('error',
                 (err) => {
-                    log.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warn('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
             socket.on('error',
                 (err) => {
-                    log.warning('[Master] Error: socket error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warn('[Master] Error: socket error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
@@ -273,7 +273,7 @@ module.exports = class Master {
             const proxy_req = http.request(proxyOpts);
 
             proxy_req.on('error', (err) => {
-                log.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                log.warn('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                 return writeEndSocket(socket, 500, `[Master] Error: request error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
             });
@@ -283,7 +283,7 @@ module.exports = class Master {
 
             proxy_req.on('connect', (instance_req, proxy_socket) => {
                 proxy_socket.on('error', (err) => {
-                    log.warning('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warn('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                     return writeEndSocket(socket, 500, `[Master] Error: response error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
                 });
