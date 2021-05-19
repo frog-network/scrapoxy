@@ -27,7 +27,7 @@ const configDefaults = require('./config.defaults');
 
 
 program
-    .version('3.1.3')
+    .version('3.2.0')
     .option('-d, --debug', 'Debug mode (increase verbosity)', debugMode)
     .parse(process.argv);
 
