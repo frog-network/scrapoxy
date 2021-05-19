@@ -5,12 +5,9 @@ const _ = require('lodash'),
     EventEmitter = require('events').EventEmitter,
     Instance = require('./instance'),
     ScalingError = require('../../common/error/scaling'),
-    winston = require('winston');
+    log = require('../../common/logger')
+    // winston = require('winston');
 
-const  log_level = process.env.LOG_LEVEL || 'error'
-
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {timestamp: true, level: log_level});
 
 module.exports = class Manager extends EventEmitter {
     constructor(config, stats, providers) {
@@ -46,7 +43,7 @@ module.exports = class Manager extends EventEmitter {
 
 
     waitForAliveInstances(count) {
-        winston.debug('[Manager] waitForAliveInstances: count=%d', count);
+        log.debug('[Manager] waitForAliveInstances: count=%d', count);
 
         if (this._aliveInstances.length === count) {
             return Promise.resolve();
@@ -62,7 +59,7 @@ module.exports = class Manager extends EventEmitter {
     start() {
         const self = this;
 
-        winston.debug('[Manager] start');
+        log.debug('[Manager] start');
 
         self._checkIntervalTimeout = setInterval(checkInstances, self._config.checkDelay);
 
@@ -70,7 +67,7 @@ module.exports = class Manager extends EventEmitter {
         ////////////
 
         function checkInstances() {
-            winston.debug('[Manager] checkInstances');
+            log.debug('[Manager] checkInstances');
 
             Promise.map(self._providers,
                 (provider) => provider.models
@@ -84,7 +81,7 @@ module.exports = class Manager extends EventEmitter {
                         self.emit('scaling:error', err);
                     }
 
-                    winston.error('[Manager] Error: Cannot update or adjust instances:', err);
+                    log.error('[Manager] Error: Cannot update or adjust instances:', err);
                 });
 
 
@@ -122,7 +119,7 @@ module.exports = class Manager extends EventEmitter {
                     }
                     else {
                         // Add
-                        winston.debug('[Manager] checkInstances: add:', model.toString());
+                        log.debug('[Manager] checkInstances: add:', model.toString());
 
                         instance = new Instance(self, self._stats, provider, self._config);
                         self._managedInstances.set(name, instance);
@@ -137,7 +134,7 @@ module.exports = class Manager extends EventEmitter {
                 existingNames.forEach((name) => {
                     const instance = self._managedInstances.get(name);
 
-                    winston.debug('[Manager] checkInstances: remove:', instance.model.toString());
+                    log.debug('[Manager] checkInstances: remove:', instance.model.toString());
 
                     self._managedInstances.delete(name);
 
@@ -175,13 +172,13 @@ module.exports = class Manager extends EventEmitter {
 
             function adjustInstances() {
                 const managedCount = self._managedInstances.size;
-                winston.debug('[Manager] adjustInstances: required:%d / actual:%d', self._config.scaling.required, managedCount);
+                log.debug('[Manager] adjustInstances: required:%d / actual:%d', self._config.scaling.required, managedCount);
 
                 if (managedCount > self._config.scaling.required) {
                     // Too much
                     const count = managedCount - self._config.scaling.required;
 
-                    winston.debug('[Manager] adjustInstances: remove %d instances', count);
+                    log.debug('[Manager] adjustInstances: remove %d instances', count);
 
                     const instances = _(Array.from(self._managedInstances.values()))
                         .sampleSize(count)
@@ -193,7 +190,7 @@ module.exports = class Manager extends EventEmitter {
                     // Not enough
                     const count = self._config.scaling.required - managedCount;
 
-                    winston.debug('[Manager] adjustInstances: add %d instances', count);
+                    log.debug('[Manager] adjustInstances: add %d instances', count);
 
                     return createInstances(count);
                 }
@@ -261,7 +258,7 @@ module.exports = class Manager extends EventEmitter {
 
         const randomName = names[Math.floor(Math.random() * names.length)];
 
-        winston.debug('[Manager] crashRandomInstance: name=%s', randomName);
+        log.debug('[Manager] crashRandomInstance: name=%s', randomName);
 
         const instance = this._managedInstances.get(randomName);
         return instance.remove();
@@ -271,7 +268,7 @@ module.exports = class Manager extends EventEmitter {
     stop() {
         const self = this;
 
-        winston.debug('[Manager] stop');
+        log.debug('[Manager] stop');
 
         self._config.scaling.required = 0;
         self.emit('scaling:updated', self._config.scaling);

@@ -10,12 +10,8 @@ const _ = require('lodash'),
     ProxyAgent = require('./proxy-agent'),
     sanitize = require('./sanitize'),
     url = require('url'),
-    winston = require('winston');
-
-const  log_level = process.env.LOG_LEVEL || 'error'
-
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {timestamp: true, level: log_level});
+    log = require('../../common/logger')
+    // winston = require('winston');
 
 module.exports = class Master {
     constructor(config, manager, stats) {
@@ -29,7 +25,7 @@ module.exports = class Master {
         if (self._config.auth &&
             self._config.auth.username &&
             self._config.auth.password) {
-            winston.debug("[Master] Found credentials with username '%s'", self._config.auth.username);
+            log.debug("[Master] Found credentials with username '%s'", self._config.auth.username);
 
             const usernamePasswordB64 = new Buffer(`${self._config.auth.username}:${self._config.auth.password}`).toString('base64');
             self._token = `Basic ${usernamePasswordB64}`;
@@ -93,13 +89,13 @@ module.exports = class Master {
             // Log errors
             req.on('error',
                 (err) => {
-                    winston.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
             res.on('error',
                 (err) => {
-                    winston.warning('[Master] Error: response error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warning('[Master] Error: response error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
@@ -144,7 +140,7 @@ module.exports = class Master {
             }
 
             proxy_req.on('error', (err) => {
-                winston.warning('[Master] Error: request error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                log.warning('[Master] Error: request error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                 return writeEndRequest(res, 500, `[Master] Error: request error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
             });
@@ -154,7 +150,7 @@ module.exports = class Master {
 
             proxy_req.on('response', (proxy_res) => {
                 proxy_res.on('error', (err) => {
-                    winston.warning('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warning('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                     return writeEndRequest(res, 500, `[Master] Error: response error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
                 });
@@ -226,13 +222,13 @@ module.exports = class Master {
             // Log errors
             req.on('error',
                 (err) => {
-                    winston.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
             socket.on('error',
                 (err) => {
-                    winston.warning('[Master] Error: socket error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warning('[Master] Error: socket error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
                 }
             );
 
@@ -277,7 +273,7 @@ module.exports = class Master {
             const proxy_req = http.request(proxyOpts);
 
             proxy_req.on('error', (err) => {
-                winston.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                log.warning('[Master] Error: request error from client (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                 return writeEndSocket(socket, 500, `[Master] Error: request error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
             });
@@ -287,7 +283,7 @@ module.exports = class Master {
 
             proxy_req.on('connect', (instance_req, proxy_socket) => {
                 proxy_socket.on('error', (err) => {
-                    winston.warning('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
+                    log.warning('[Master] Error: response error from target (%s %s on instance %s):', req.method, req.url, instance.toString(), err);
 
                     return writeEndSocket(socket, 500, `[Master] Error: response error from target (${req.method} ${req.url} on instance ${instance.toString()}): ${err.toString()}`);
                 });
@@ -417,7 +413,7 @@ module.exports = class Master {
                     return reject(new Error(`[Master] Cannot listen at port ${this._config.port} : ${err.toString()}`));
                 }
 
-                winston.info('Proxy is listening at http://localhost:%d', this._config.port);
+                log.info('Proxy is listening at http://localhost:%d', this._config.port);
 
                 return resolve();
             });
@@ -426,7 +422,7 @@ module.exports = class Master {
 
 
     shutdown() {
-        winston.debug('[Master] shutdown');
+        log.debug('[Master] shutdown');
 
         this._server.close();
     }

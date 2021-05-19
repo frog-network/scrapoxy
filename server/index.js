@@ -18,23 +18,16 @@ const _ = require('lodash'),
     sigstop = require('./common/sigstop'),
     template = require('./template'),
     TestProxy = require('./test-proxy'),
-    winston = require('winston');
-const { exit } = require('process');
-const { log } = require('util');
+    log = require('./common/logger')
+    // winston = require('winston');
+// const { exit } = require('process');
+// const { log } = require('util');
 
 const configDefaults = require('./config.defaults');
 
 
-// Add timestamp to log
-const log_level = process.env.LOG_LEVEL || 'error'
-
-winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {timestamp: true, level: log_level});
-
-winston.log(log_level,`starting with debug level: ${log_level}`)
-
 program
-    .version('3.1.3')
+    .version('3.2.0')
     .option('-d, --debug', 'Debug mode (increase verbosity)', debugMode)
     .parse(process.argv);
 
@@ -71,20 +64,20 @@ if (!program.args.length) {
 
 function initConfig(configFilename) {
     if (!configFilename || configFilename.length <= 0) {
-        return winston.error('[Template] Error: Config file not specified');
+        return log.error('[Template] Error: Config file not specified');
     }
 
     fs.exists(configFilename, (exists) => {
         if (exists) {
-            return winston.error('[Template] Error: Config file already exists');
+            return log.error('[Template] Error: Config file already exists');
         }
 
         template.write(configFilename, (err) => {
             if (err) {
-                return winston.error('[Template] Error: Cannot write template to', configFilename);
+                return log.error('[Template] Error: Cannot write template to', configFilename);
             }
 
-            winston.info('[Template] Template written in', configFilename);
+            log.info('[Template] Template written in', configFilename);
         });
     });
 }
@@ -92,7 +85,7 @@ function initConfig(configFilename) {
 
 function startProxy(configFilename) {
     if (!configFilename || configFilename.length <= 0) {
-        return winston.error('[Start] Error: Config file not specified');
+        return log.error('[Start] Error: Config file not specified');
     }
 
     configFilename = path.resolve(process.cwd(), configFilename);
@@ -103,12 +96,12 @@ function startProxy(configFilename) {
         config = _.merge({}, configDefaults, require(configFilename));
     }
     catch (err) {
-        return winston.error('[Start] Error: Cannot load config:', err);
+        return log.error('[Start] Error: Cannot load config:', err);
     }
 
     // Write logs (if specified)
     if (config.logs && config.logs.path) {
-        winston.add(winston.transports.File, {
+        log.add(log.transports.File, {
             filename: `${config.logs.path}/scrapoxy_${moment().format('YYYYMMDD_HHmmss')}.log`,
             json: false,
             timestamp: true,
@@ -118,7 +111,7 @@ function startProxy(configFilename) {
     // Initialize
     const providers = getProviders(config);
     if (providers.length <= 0) {
-        return winston.error('[Start] Error: Providers are not specified or supported');
+        return log.error('[Start] Error: Providers are not specified or supported');
     }
 
     const main = new Proxies(config, providers);
@@ -184,7 +177,7 @@ function startProxy(configFilename) {
 
 function testProxy(proxyUrl, count) {
     if (!proxyUrl || proxyUrl.length <= 0) {
-        return winston.error('[Test] Error: URL not specified');
+        return log.error('[Test] Error: URL not specified');
     }
 
     // Default: 10 / Max: 1000
@@ -200,21 +193,21 @@ function testProxy(proxyUrl, count) {
     Promise
         .all(promises)
         .then(() => {
-            winston.info('[Test] %d IPs found:', proxy.size);
+            log.info('[Test] %d IPs found:', proxy.size);
 
             proxy.count.forEach(
-                (value, key) => winston.info('[Test] %s (%d times)', key, value)
+                (value, key) => log.info('[Test] %s (%d times)', key, value)
             );
         })
         .catch((err) => {
-            winston.error('[Test] Error: Cannot get IP address:', err);
+            log.error('[Test] Error: Cannot get IP address:', err);
         });
 }
 
 
 function ovhConsumerKey(endpoint, appKey, appSecret) {
     if (!appKey || appKey.length <= 0 || !appSecret || appSecret.length <= 0) {
-        return winston.error('[OVH] Error: appKey or appSecret not specified');
+        return log.error('[OVH] Error: appKey or appSecret not specified');
     }
 
     const client = ovh({
@@ -232,15 +225,15 @@ function ovhConsumerKey(endpoint, appKey, appSecret) {
         ],
     }, (err, credential) => {
         if (err) {
-            return winston.error('[OVH] Error: Cannot get consumerKey:', err);
+            return log.error('[OVH] Error: Cannot get consumerKey:', err);
         }
 
-        winston.info('[OVH] Your consumerKey is:', credential.consumerKey);
-        winston.info('[OVH] Please validate your token here:', credential.validationUrl);
+        log.info('[OVH] Your consumerKey is:', credential.consumerKey);
+        log.info('[OVH] Please validate your token here:', credential.validationUrl);
     });
 }
 
 
 function debugMode() {
-    winston.level = 'debug';
+    log.level = 'debug';
 }
