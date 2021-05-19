@@ -12,6 +12,10 @@ const Promise = require('bluebird'),
     socketIO = require('socket.io'),
     winston = require('winston');
 
+const  log_level = process.env.LOG_LEVEL || 'error'
+
+winston.remove(winston.transports.Console);
+winston.add(winston.transports.Console, {timestamp: true, level: log_level});
 
 module.exports = class Commander {
     constructor(config, manager, stats) {
