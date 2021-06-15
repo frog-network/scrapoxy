@@ -315,7 +315,7 @@ module.exports = class ProviderGCP {
     const ids = models.map((model) => model.providerOpts.id),
       names = models.map((model) => model.toString()).join(',');
 
-    log.debug(`[ProviderGCP] removeInstances: models=${JSON.stringify(names)});
+    log.debug(`[ProviderGCP] removeInstances: models=${JSON.stringify(names)}`);
 
     return new Promise((resolve, reject) => {
     //   const params = {
