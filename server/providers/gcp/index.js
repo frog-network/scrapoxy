@@ -127,7 +127,7 @@ module.exports = class ProviderGCP {
         const summary = {
           id: instanceDesc.id,
           status: instanceDesc.metadata.status,
-          ip: instanceDesc.metadata.networkInterfaces[0].accessConfigs[0].natIP || instanceDesc.metadata.networkInterfaces[0].networkIP,
+          // ip: instanceDesc.metadata.networkInterfaces[0].accessConfigs[0].natIP || instanceDesc.metadata.networkInterfaces[0].networkIP,
           tag: getTag(instanceDesc),
         };
         log.debug('[ProviderGCP] summarizeInfo:', JSON.stringify(summary));
